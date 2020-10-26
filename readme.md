@@ -11,6 +11,8 @@
 Please copy the files from this folder to your user\Documents\Autodesk\Automotive\VRED folder
 ![](VRED-VR-ScreenshotOsbFiles.png)
 
+<br>
+
 ### VRED-drawLines - Cou can draw in VRED
 You can use this script in VR or in Desktop Mode to Sketch on your HighQuality Model in VRED.
 The Color of your line will Automatically adapt to your Collaboration color.
