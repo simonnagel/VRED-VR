@@ -8,7 +8,7 @@
 
 
 ### Before you start:
-Please copy the files from this folder to your user\Documents\Autodesk\Automotive\VRED folder
+Please copy all the files named VRControllerXXX.osb to your user\Documents\Autodesk\Automotive\VRED folder
 ![](VRED-VR-ScreenshotOsbFiles.png)
 
 <br>
