@@ -19,11 +19,12 @@ The Color of your line will Automatically adapt to your Collaboration color.
 Works ootb in Collaboration.
 
 In Desktop Mode: Press D to draw
-In VR: Go to your VR Menu and choose Draw. 
-Use the Trigger to draw.
-Press the middle of the touchpad to change the draw mode.
-Press the left of the touchpad to delete the last line.
-Press the bototm of the touchpad to hide all lines.
+In VR: 
+- Go to your VR Menu and choose Draw. 
+- Use the Trigger to draw.
+- Press the middle of the touchpad to change the draw mode.
+- Press the left of the touchpad to delete the last line.
+- Press the bototm of the touchpad to hide all lines.
 
 VRED-drawLines:
 ![](VRED-VR-drawLines.gif)
@@ -36,13 +37,14 @@ Customize the file VRControllerNotes_Notes.osb to change the shape of your Notes
 
 Works ootb in Collaboration.
 
-In VR: Go to your VR Menu and choose Notes.
-Use the Trigger to create a note.
-Press the middle of the touchpad to change the create mode.
-Press the left of the touchpad scale the active note smaller.
-Press the right of the touchpad scale the active note bigger.
-Press the top of the touchpad to toggle to the next note type.
-Press the bottom of the touchpad to active delete mode. Once deleted, you can hover with the ray over any note and press the trigger to delete
+In VR: 
+- Go to your VR Menu and choose Notes.
+- Use the Trigger to create a note.
+- Press the middle of the touchpad to change the create mode.
+- Press the left of the touchpad scale the active note smaller.
+- Press the right of the touchpad scale the active note bigger.
+- Press the top of the touchpad to toggle to the next note type.
+- Press the bottom of the touchpad to active delete mode. Once deleted, you can hover with the ray over any note and press the trigger to delete
 
 VRED-VR-createNotes:
 ![](VRED-VR-createNotes.gif)
