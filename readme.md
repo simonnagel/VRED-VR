@@ -1,20 +1,31 @@
 # Collection of VR functions of VRED
 ### Improve your VRED VR experience with custom python function
 ### Just copy and paste python code to your VRED Scene
-### Lines can be tracked according to the line creators' collaboration name.
-Simply paste the Python scrupt into the Script Editor within VRED and click run.
 
-Press D to enable drawing. You will see a pencil which indicates that drawing is activated. Draw while keeping the left mouse button pressed and move your mouse cursor. You can draw directly onto geometry and create a "line" geometry per stroke.
+### Before you start:
+Please copy the files from this folder to your user\Documents\Autodesk\Automotive\VRED folder
+![](VRED-VR-ScreenshotOsbFiles.pngf)
 
-Press D again to disable drawing. Press L to remove the last line. Press G to remove all the lines.
+### VRED-drawLines - Cou can draw in VRED
+You can use this script in VR or in Desktop Mode to Sketch on your HighQuality Model in VRED.
+The Color of your line will Automatically adapt to your Collaboration color.
+Works ootb in Collaboration.
 
-This script also works in VRED Collaboration. Please ensure that the script is executed on each computer of all participants.
+In Desktop Mode: Press D to draw
+In VR: Go to your VR Menu and choose Draw
+
+VRED-drawLines:
+![](VRED-VR-drawLines.gif)
 
 
+### VRED-drawLines - Cou can draw in VRED
+You can use this script in VR or in Desktop Mode to Sketch on your HighQuality Model in VRED.
+The Color of your line will Automatically adapt to your Collaboration color.
+Works ootb in Collaboration.
 
-### VRED-drawLinesDesktopCollab:
-VRED-drawLinesDesktopCollab Single User:
-![](VRED-drawLinesDesktopCollab1.gif)
+In Desktop Mode: Press D to draw
+In VR: Go to your VR Menu and choose Draw
 
-VRED-drawLinesDesktopCollab Multi User:
-![](VRED-drawLinesDesktopCollab4.gif)
+
+VRED-VR-createNotes:
+![](VRED-VR-createNotes.gif)
