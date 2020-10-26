@@ -18,7 +18,9 @@ You can use this script in VR or in Desktop Mode to Sketch on your HighQuality M
 The Color of your line will Automatically adapt to your Collaboration color.
 Works ootb in Collaboration.
 
-In Desktop Mode: Press D to draw
+In Desktop Mode: 
+- Press D to draw
+
 In VR: 
 - Go to your VR Menu and choose Draw. 
 - Use the Trigger to draw.
