@@ -13,7 +13,7 @@ To have a customized VR Controller, please copy all the files named VRController
 
 <br>
 
-### VRED-drawLines - you can draw in VRED
+### VRED-VR-drawLines - you can draw in VRED
 You can use this script in VR or in Desktop Mode to Sketch on your HighQuality Model in VRED.
 The Color of your line will Automatically adapt to your Collaboration color.
 Works ootb in Collaboration.
@@ -29,7 +29,7 @@ VRED-drawLines:
 ![](VRED-VR-drawLines.gif)
 
 
-### VRED-drawLines - you create notes in VRED
+### VRED-VR-createNotes - you create notes in VRED
 You can use this script in VR to create Notes in your Scene. 
 Customize the file VRControllerNotes_Notes.osb to change the shape of your Notes. You can add as many Notes as you want below the Switch Node "Notes"
 
