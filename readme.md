@@ -1,6 +1,11 @@
-# Collection of VR functions of VRED
+# Collection of VR functions for VRED
 ### Improve your VRED VR experience with custom python function
 ### Just copy and paste python code to your VRED Scene
+
+
+
+
+
 
 ### Before you start:
 Please copy the files from this folder to your user\Documents\Autodesk\Automotive\VRED folder
