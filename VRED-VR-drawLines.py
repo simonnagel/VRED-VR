@@ -150,7 +150,9 @@ if drawController == 0:
     else:
         print("file doesnt exist")
         drawControllerFound = False
-
+else:
+    drawControllerFound = True
+    
 if drawControllerFound == True:
     drawControllerTool = findNode("VRController_Draw")
     drawControllerTool.setActive(0)
