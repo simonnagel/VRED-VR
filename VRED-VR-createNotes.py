@@ -61,7 +61,9 @@ if notesController == 0:
     else:
         print("file doesnt exist")
         notesControllerFound = False
-
+else:
+    notesControllerFound = True
+    
 if goodBadNotes == 0:
     import os
     myDocuments = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
