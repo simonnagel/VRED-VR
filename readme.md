@@ -29,7 +29,7 @@ VRED-drawLines:
 ![](VRED-VR-drawLines.gif)
 
 
-### VRED-VR-createNotes.py - you create notes in VRED
+### VRED-VR-createNotes.py - you can create notes in VRED
 You can use this script in VR to create Notes in your Scene. 
 Customize the file VRControllerNotes_Notes.osb to change the shape of your Notes. You can add as many Notes as you want below the Switch Node "Notes"
 
