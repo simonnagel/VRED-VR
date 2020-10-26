@@ -27,6 +27,7 @@ Press the bototm of the touchpad to hide all lines.
 
 VRED-drawLines:
 ![](VRED-VR-drawLines.gif)
+![](VRED-VR-drawLines2.gif)
 
 
 ### VRED-VR-createNotes.py - you can create notes in VRED
