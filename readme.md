@@ -20,6 +20,8 @@ Works ootb in Collaboration.
 
 In Desktop Mode: 
 - Press D to draw
+- Press L to delete the last line 
+- Press G to hide/toggle all the lines 
 
 In VR: 
 - Go to your VR Menu and choose Draw. 
