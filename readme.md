@@ -31,8 +31,8 @@ In VR:
 - Press the bototm of the touchpad to hide all lines.
 
 VRED-drawLines:
-![](imagesVRED-VR-drawLines.gif)
-![](imagesVRED-VR-drawLines2.gif)
+![](images/VRED-VR-drawLines.gif)
+![](images/VRED-VR-drawLines2.gif)
 
 
 ### VRED-VR-createNotes.py - you can create notes in VRED
@@ -51,4 +51,4 @@ In VR:
 - Press the bottom of the touchpad to active delete mode. Once deleted, you can hover with the ray over any note and press the trigger to delete
 
 VRED-VR-createNotes:
-![](imagesVRED-VR-createNotes.gif)
+![](images/VRED-VR-createNotes.gif)
