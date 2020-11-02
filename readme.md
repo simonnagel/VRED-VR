@@ -2,13 +2,14 @@
 ### Improve your VRED VR experience with custom python functions
 ### Just copy and paste the python code to your VRED Sript Editor and press run
 
+![](images/VRED-VR-drawLines.gif)
 
 <br>
 
 
 
 ### Before you start:
-To ustomized VR Controller, please copy all the files from the folder [OSB](https://github.com/simonnagel/VRED-VR/tree/master/OSB) to your user\Documents\Autodesk\Automotive\VRED folder
+To customized your VR Controller, please copy all the files from the folder [OSB](https://github.com/simonnagel/VRED-VR/tree/master/OSB) to your user\Documents\Autodesk\Automotive\VRED folder
 <br>
 This is highly recommended, otherwise you will __not__ see icons on the controller.
 <br>
@@ -36,7 +37,7 @@ In VR:
 - Press the bototm of the touchpad to hide all lines.
 
 VRED-drawLines:
-![](images/VRED-VR-drawLines.gif)
+
 ![](images/VRED-VR-drawLines2.gif)
 
 
