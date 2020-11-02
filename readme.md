@@ -9,7 +9,7 @@
 
 ### Before you start:
 To have a customized VR Controller, please copy all the files named VRControllerXXX.osb to your user\Documents\Autodesk\Automotive\VRED folder
-![](VRED-VR-ScreenshotOsbFiles.png)
+![](images/VRED-VR-ScreenshotOsbFiles.png)
 
 <br>
 
@@ -31,8 +31,8 @@ In VR:
 - Press the bototm of the touchpad to hide all lines.
 
 VRED-drawLines:
-![](VRED-VR-drawLines.gif)
-![](VRED-VR-drawLines2.gif)
+![](imagesVRED-VR-drawLines.gif)
+![](imagesVRED-VR-drawLines2.gif)
 
 
 ### VRED-VR-createNotes.py - you can create notes in VRED
@@ -51,4 +51,4 @@ In VR:
 - Press the bottom of the touchpad to active delete mode. Once deleted, you can hover with the ray over any note and press the trigger to delete
 
 VRED-VR-createNotes:
-![](VRED-VR-createNotes.gif)
+![](imagesVRED-VR-createNotes.gif)
