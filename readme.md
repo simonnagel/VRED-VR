@@ -8,7 +8,7 @@
 
 
 ### Before you start:
-To have a customized VR Controller, please copy all the files named VRControllerXXX.osb to your user\Documents\Autodesk\Automotive\VRED folder
+To have a customized VR Controller, please copy all the files from the folder [OSB](https://github.com/simonnagel/VRED-voiceRecognition/raw/master/OSB) to your user\Documents\Autodesk\Automotive\VRED folder
 ![](images/VRED-VR-ScreenshotOsbFiles.png)
 
 <br>
