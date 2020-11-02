@@ -10,16 +10,18 @@
 ### Before you start:
 To ustomized VR Controller, please copy all the files from the folder [OSB](https://github.com/simonnagel/VRED-VR/tree/master/OSB) to your user\Documents\Autodesk\Automotive\VRED folder
 <br>
-This is highly recommended, otherwise you will __not__ see the icons for draw, notes, etc on the controller
+This is highly recommended, otherwise you will __not__ see icons on the controller.
 <br>
 ![](images/VRED-VR-ScreenshotOsbFiles.png)
 
 <br>
 
 ### VRED-VR-drawLines.py - you can draw in VRED
-You can use this script in VR or in Desktop Mode to Sketch on your HighQuality Model in VRED.
-The Color of your line will Automatically adapt to your Collaboration color.
+You can use this script in VR or in Desktop Mode to Sketch on your High Quality Model in VRED.
+The Color of your drawing line will automatically adapt to your Collaboration color.
 Works ootb in Collaboration.
+
+Just paste the script [VRED-VR-drawLines.py](https://github.com/simonnagel/VRED-VR/tree/master/VRED-VR-drawLines.py) in your VRED Script Editor and press run.
 
 In Desktop Mode: 
 - Press D to draw
