@@ -384,22 +384,30 @@ class Notes():
             self.upbuttonIsActive = False 
 
     def iconsNotesTrashOn(self):
-        setSwitchMaterialChoice("C_N_Icon_Minus", 0)
-        setSwitchMaterialChoice("C_N_Icon_Next", 0)
-        setSwitchMaterialChoice("C_N_Icon_Plus", 0)
-        setSwitchMaterialChoice("C_N_Icon_Trash", 2)
-             
+        global notesControllerFound
+        if notesControllerFound == True:
+            setSwitchMaterialChoice("C_N_Icon_Minus", 0)
+            setSwitchMaterialChoice("C_N_Icon_Next", 0)
+            setSwitchMaterialChoice("C_N_Icon_Plus", 0)
+            setSwitchMaterialChoice("C_N_Icon_Trash", 2)
+
     def iconsNotesTrashOff(self):
-        setSwitchMaterialChoice("C_N_Icon_Minus", 1)
-        setSwitchMaterialChoice("C_N_Icon_Next", 1)
-        setSwitchMaterialChoice("C_N_Icon_Plus", 1)
-        setSwitchMaterialChoice("C_N_Icon_Trash", 1)
+        global notesControllerFound
+        if notesControllerFound == True:
+            setSwitchMaterialChoice("C_N_Icon_Minus", 1)
+            setSwitchMaterialChoice("C_N_Icon_Next", 1)
+            setSwitchMaterialChoice("C_N_Icon_Plus", 1)
+            setSwitchMaterialChoice("C_N_Icon_Trash", 1)
 
     def iconsNotesConstraint(self):
-        setSwitchMaterialChoice("C_N_Icon_Notes", 2)
+        global notesControllerFound
+        if notesControllerFound == True:
+            setSwitchMaterialChoice("C_N_Icon_Notes", 2)
         
     def iconsNotesRay(self):
-        setSwitchMaterialChoice("C_N_Icon_Notes", 1) 
+        global notesControllerFound
+        if notesControllerFound == True:
+            setSwitchMaterialChoice("C_N_Icon_Notes", 1) 
         
     def neutralNotes(self):
         
