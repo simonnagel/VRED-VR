@@ -257,12 +257,14 @@ def toggleLines():
     if linesVisible == False:
         linesVisible = True
         vrSessionService.sendPython('lineGrp.setActive(0)')
-        setSwitchMaterialChoice("C_D_Icon_Visible", 1)
+        if drawControllerFound == True:
+            setSwitchMaterialChoice("C_D_Icon_Visible", 1)
         
     else:
         linesVisible = False
         vrSessionService.sendPython('lineGrp.setActive(1)')
-        setSwitchMaterialChoice("C_D_Icon_Visible", 0)
+        if drawControllerFound == True:
+            setSwitchMaterialChoice("C_D_Icon_Visible", 0)
         
 l_child = findNode("D_tempLine")  
 choiceState = 0
