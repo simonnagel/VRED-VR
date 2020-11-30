@@ -477,6 +477,7 @@ class DrawinVR():
         global triggerisPressed
         global drawTool
         
+        self.isEnabled = False
         self.isPointingRayActive = True
         self.createMenu()         
         self.leftController = vrDeviceService.getVRDevice("left-controller")
@@ -544,6 +545,14 @@ class DrawinVR():
         global drawOnController
         global drawControllerFound
         
+        allTools = vrImmersiveUiService.getTools()
+        for tool in allTools:
+            if tool.getIsInternal() == False and tool.getName() != self.tool.getName():
+                tool.setChecked(False)
+                tool.signal().unchecked.emit(None)
+        print("Draw Enabled")
+        self.isEnabled = True
+        
         desktopMode = False
         drawVREnable = True
         
@@ -590,6 +599,18 @@ class DrawinVR():
         global drawVREnable
         global desktopMode
         global drawControllerFound
+        
+        if self.isEnabled == False:
+            print("Draw was not enabled before " )
+            return
+        
+        allTools = vrImmersiveUiService.getTools()
+        for tool in allTools:
+            if tool.getIsInternal() == False and tool.getName() != self.tool.getName():
+                tool.setCheckable(True)
+                #tool.setChecked(False)
+        print("Draw Disabled")
+        self.isEnabled = False
         
         d_child = drawTool.getChild(0)
         d_child.setActive(True)
