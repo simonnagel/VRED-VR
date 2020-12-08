@@ -83,7 +83,7 @@ menuOpened = False
 class Notes():
     def __init__(self):
 
-        
+        self.isEnabled = False
         self.activeNode = None
         self.upbuttonIsActive = False
         self.timer = vrTimer()
@@ -194,7 +194,14 @@ class Notes():
         global ray_c_node
         global switch
         global all_Icons_nodes
-        
+        global notesControllerFound
+        allTools = vrImmersiveUiService.getTools()
+        for tool in allTools:
+            if tool.getIsInternal() == False and tool.getName() != self.tool.getName():
+                tool.setChecked(False)
+                tool.signal().unchecked.emit(None)
+        print("Notes Enabled")
+        self.isEnabled = True
                 
         vrDeviceService.setActiveInteractionGroup("NotesGroup")                        
         self.leftAction.signal().triggered.connect(self.sizeDown)
@@ -238,7 +245,18 @@ class Notes():
              
         
     def notesDisable(self):
-
+        global notesControllerFound
+        
+        if self.isEnabled == False:
+            print("Notes was not enabled before " )
+            return
+        allTools = vrImmersiveUiService.getTools()
+        for tool in allTools:
+            if tool.getIsInternal() == False and tool.getName() != self.tool.getName():
+                tool.setCheckable(True)
+                #tool.setChecked(False)
+        print("Notes Disabled")
+        self.isEnabled = False
         
         self.deleteNoteIsActive = False
         self.leftAction.signal().triggered.disconnect(self.sizeDown)
