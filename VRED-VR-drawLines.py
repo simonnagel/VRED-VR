@@ -5,12 +5,9 @@ In any case, all binaries, configuration code, templates and snippets of this so
 This also applies to GitHub "Release" versions.
 Neither Simon Nagel, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
 Accordingly, those configuration samples are provided ?as is? with no warranty of any kind and you use the applications at your own risk.
-
 Scripted by Simon Nagel, supported by Rutvik Bhatt
-
 First download and copy paste the "VRControllerDraw.osb" file provided in the GitHub repository into "C:\Users\USERNAME\Documents\Autodesk\Automotive\VRED" path in order to use the dedicated draw controller.
 If you do not wish to use the dedicated controller you can skip this part. 
-
 Just paste the Scene in the Script Editor of VRED and press run.
 Press D to enable drawing 
     You will see a pencil, as an indicator, that drawing is active.
@@ -19,7 +16,6 @@ Press D to enable drawing
 Press D again to disable drawing 
 Press L to remove the last line 
 Press G to remove all the lines
-
 VR Instructions:
     
 Turn on OpenVR and press the menu button.
@@ -31,11 +27,8 @@ Press Center Touch Pad button on the right controller to change the mode of draw
     2. Second draw mode is the draw on ray mode, The ray will be visible constantly and by pressing the right trigger you can draw at the end of the ray on any Geometry
 Press the Down Touch Pad button to hide all the drawing that you have made 
 Press the Left Touch Pad button to delete the last line  
-
-
 This script works in VRED Collaboration.
 Please make sure that, the Script is executed on each computer of each participant.
-
 '''
 
 import math
@@ -422,12 +415,12 @@ def drawDesktop():
                 valueNewLength = "%d" %lengths
                 valueIndicesList = "%s" %indicesList
                 valuePosition = "%s" %positions
-                if vrSessionService.isConnected() == 1:
+                if vrSessionService.isConnected():
                     localUser = vrSessionService.getUser()
                     localUserID = vrdSessionUser.getUserId(localUser)
                     newMatName = "_d_line_material_"+str(localUserID)
                 else:
-                    newMatName = "_d_line_material_"
+                    newMatName = "_d_line_material_"+str(1000)
                 valueLocalId = "%s" %newMatName
                 
 
@@ -450,9 +443,10 @@ def drawDesktop():
                 vrSessionService.sendPython('vrFieldAccess(clnode.fields().getFieldContainer("lengths")).setMUInt32("lengths",['+valueNewLength+'])')               
                 vrSessionService.sendPython('vrFieldAccess(clnode.fields().getFieldContainer("indices")).setMUInt32("indices",'+valueIndicesList+')')
                 vrSessionService.sendPython('clnode.setPositions('+valuePosition+')')
-                if vrSessionService.isConnected() == 1:
+                if vrSessionService.isConnected():
                     vrSessionService.sendPython('clnode.setMaterial(findMaterial("'+valueLocalId+'"))')
-                
+                else:
+                    vrSessionService.sendPython('clnode.setMaterial(findMaterial("_d_line_material"))')
                 leContain = vrFieldAccess(node.fields().getFieldContainer("lengths")) 
                 leContain.setMUInt32("lengths",[1])
                 inContain = vrFieldAccess(node.fields().getFieldContainer("indices")) 
@@ -693,4 +687,4 @@ class DrawinVR():
         self.rightController.enableRay("controllerhandle") 
                     
 draw = DrawinVR()       
-print("Executed")        
+print("Executed")
