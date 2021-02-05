@@ -112,7 +112,7 @@ class Notes():
         self.rightController.addVirtualButton(padRight, 'touchpad')
         self.rightController.addVirtualButton(padDown, 'touchpad')
    
-        multiButtonPad = vrDeviceService.createInteraction("MultiButtonPad")
+        multiButtonPad = vrDeviceService.createInteraction("MultiButtonPadNotes")
         multiButtonPad.setSupportedInteractionGroups(["NotesGroup"])
         toolsMenuNotes = vrDeviceService.getInteraction("Tools Menu")
         toolsMenuNotes.addSupportedInteractionGroup("NotesGroup")  
@@ -180,7 +180,7 @@ class Notes():
         #icon = QtGui.QIcon()
         #icon.addFile("objectMoveOn.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.On)
         #con.addFile("objectMoveOff.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.Off)
-        self.tool = vrImmersiveUiService.createTool("CustomNotes")
+        self.tool = vrImmersiveUiService.createTool("Tool_Notes")
         self.tool.setText("Notes")
         self.tool.setCheckable(True)
         #self.tool.setIcon(icon)
@@ -197,7 +197,7 @@ class Notes():
         global notesControllerFound
         allTools = vrImmersiveUiService.getTools()
         for tool in allTools:
-            if tool.getIsInternal() == False and tool.getName() != self.tool.getName():
+            if tool.getIsInternal() == False and tool.getName() != self.tool.getName() and tool.getName()[:5] == 'Tool_':
                 tool.setChecked(False)
                 tool.signal().unchecked.emit(None)
         print("Notes Enabled")
