@@ -5,12 +5,9 @@ In any case, all binaries, configuration code, templates and snippets of this so
 This also applies to GitHub "Release" versions.
 Neither Simon Nagel, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
 Accordingly, those configuration samples are provided ?as is? with no warranty of any kind and you use the applications at your own risk.
-
 Scripted by Simon Nagel, supported by Rutvik Bhatt
-
 First download and copy two osb files "VRControllerNotes_Notes" and "VRControllerNotes" provided in GitHub repository into "C:\Users\USERNAME\Documents\Autodesk\Automotive\VRED" path in order to use the dedicated Notes controller.
 If you do not wish to use the dedicated controller you can skip this part. 
-
 Just paste the Scene in the Script Editor of VRED and press run.
 Turn on the OpenVR and press the menu button on the controller. 
 Press the 'Notes' tools menu in the menu. 
@@ -24,10 +21,8 @@ Press the Down Touch Pad button to enable the delete mode, You can delete the no
 Press the Left or Right Touch Pad button to increase and decrease the size of the Notes
 Press the Up Touch Pad button to change the note from 'Good Note' to 'Bad Note'
     
-
 This script works in VRED Collaboration.
 Please make sure that, the Script is executed on each computer of each participant.
-
 '''
 
 
@@ -36,8 +31,9 @@ Please make sure that, the Script is executed on each computer of each participa
 
 from math import sqrt
 import random
-
+from PySide2 import QtCore, QtGui
 notesControllerFound = False
+mainCustomFuncGroup = False
 
 notesController = 0
 goodBadNotes = 0
@@ -48,7 +44,11 @@ for node in allNotesNodes:
         notesController+=1
     elif allNotesNodeName == "Notes":
         goodBadNotes += 1
-
+    elif allNotesNodeName == 'VRED-VR-Custom-Fucntion':
+        print("group node found in Notes")
+        mainCustomFuncGroup = True
+        customFunctionsGroup = node
+        
 if notesController == 0:
     import os
     myDocuments = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
@@ -73,6 +73,18 @@ if goodBadNotes == 0:
     node.setName("VRControllerNotes_Notes")
     createNode("Group", "Cloned_ref_obj")
     
+if not mainCustomFuncGroup:
+    customFunctionsGroup = createNode('Group', 'VRED-VR-Custom-Fucntion')
+    
+allFucnNames = ["VRControllerMove", "VRControllerSelect", "VRControllerNotes", 
+                "VRControllerDraw", "VRControllerNotes_Notes", "Cloned_ref_obj",
+                "D_Tool", "D_Lines", "D_tempLine", "Group_html"]
+
+allNodeFuncname = getAllNodes()
+for node in allNodeFuncname:
+    nodeName = node.getName()
+    if nodeName in allFucnNames:
+        addChilds(customFunctionsGroup, [node])    
 
 refObject = findNode("Notes").getChild(0)
 switch = findNode("Notes")
@@ -97,8 +109,25 @@ class Notes():
         self.rightController.setVisualizationMode(Visualization_ControllerAndHand)
         vrImmersiveInteractionService.setDefaultInteractionsActive(1)
         
-
+        # six button config
+        padCenter = vrdVirtualTouchpadButton('padcenter', 0.0, 0.5, 0.0, 360.0)
+        padUpperLeft = vrdVirtualTouchpadButton('padupleft', 0.5, 1.0, 270.0, 330.0)
+        padLowerLeft = vrdVirtualTouchpadButton('paddownleft', 0.5, 1.0, 210.0, 270.0)
+        padUp = vrdVirtualTouchpadButton('padup', 0.5, 1.0, 330.0, 30.0)
+        padUpperRight = vrdVirtualTouchpadButton('padupright', 0.5, 1.0, 30.0, 90.0)
+        padLowerRight = vrdVirtualTouchpadButton('paddownright', 0.5, 1.0, 90.0, 150.0)
+        padDown = vrdVirtualTouchpadButton('paddown', 0.5, 1.0, 150.0, 210.0)
         
+        # Right controller
+        self.rightController.addVirtualButton(padCenter, 'touchpad')
+        self.rightController.addVirtualButton(padUpperLeft, 'touchpad')
+        self.rightController.addVirtualButton(padLowerLeft, 'touchpad')
+        self.rightController.addVirtualButton(padUp, 'touchpad')
+        self.rightController.addVirtualButton(padUpperRight, 'touchpad')
+        self.rightController.addVirtualButton(padLowerRight, 'touchpad')
+        self.rightController.addVirtualButton(padDown, 'touchpad')
+        
+        '''
         padCenter = vrdVirtualTouchpadButton('padcenter', 0.0, 0.5, 0.0, 360.0)
         padLeft = vrdVirtualTouchpadButton('padleft', 0.5, 1.0, 225.0, 315.0)
         padUp = vrdVirtualTouchpadButton('padup', 0.5, 1.0, 315.0, 45.0)
@@ -111,19 +140,29 @@ class Notes():
         self.rightController.addVirtualButton(padUp, 'touchpad')
         self.rightController.addVirtualButton(padRight, 'touchpad')
         self.rightController.addVirtualButton(padDown, 'touchpad')
-   
-        multiButtonPad = vrDeviceService.createInteraction("MultiButtonPadNotes")
-        multiButtonPad.setSupportedInteractionGroups(["NotesGroup"])
+        '''
+        
+        multiButtonPadNotes = vrDeviceService.createInteraction("MultiButtonPadNotes")
+        multiButtonPadNotes.setSupportedInteractionGroups(["NotesGroup"])
         toolsMenuNotes = vrDeviceService.getInteraction("Tools Menu")
         toolsMenuNotes.addSupportedInteractionGroup("NotesGroup")  
         #setting control action for right controller Pad
-        
+        '''
         self.leftAction = multiButtonPad.createControllerAction("right-padleft-pressed")
         self.upAction = multiButtonPad.createControllerAction("right-padup-pressed")
         self.downAction = multiButtonPad.createControllerAction("right-paddown-pressed")
         self.rightAction = multiButtonPad.createControllerAction("right-padright-pressed")
         self.centerAction = multiButtonPad.createControllerAction("right-padcenter-pressed")
-
+        '''
+        self.leftUpperActionNotes = multiButtonPadNotes.createControllerAction("right-padupleft-pressed")
+        self.leftDownActionNotes = multiButtonPadNotes.createControllerAction("right-paddownleft-pressed")
+        self.upActionNotes = multiButtonPadNotes.createControllerAction("right-padup-pressed")
+        self.downActionNotes = multiButtonPadNotes.createControllerAction("right-paddown-pressed")
+        self.rightUpperActionNotes = multiButtonPadNotes.createControllerAction("right-padupright-pressed")
+        self.rightDownActionNotes = multiButtonPadNotes.createControllerAction("right-paddownright-pressed")
+        self.centerActionNotes = multiButtonPadNotes.createControllerAction("right-padcenter-pressed") 
+           
+        
         teleport = vrDeviceService.getInteraction("Teleport")
         teleport.addSupportedInteractionGroup("NotesGroup") 
         teleport.setControllerActionMapping("prepare" , "left-touchpad-touched")
@@ -136,7 +175,7 @@ class Notes():
         self.pointer.addSupportedInteractionGroup("NotesGroup")
         
         # right trigger events
-        self.triggerRightPressed = multiButtonPad.createControllerAction("right-trigger-pressed")
+        self.triggerRightPressed = multiButtonPadNotes.createControllerAction("right-trigger-pressed")
         #triggerRightPressed = controllerInteraction.createControllerAction("right-trigger-released")                
         self.deleteNoteIsActive = False
         self.changeView = False
@@ -177,13 +216,19 @@ class Notes():
                  
     def createMenu(self):
         
-        #icon = QtGui.QIcon()
-        #icon.addFile("objectMoveOn.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.On)
-        #con.addFile("objectMoveOff.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.Off)
+        myDocuments = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
+        filepath =  myDocuments +"\Autodesk\Automotive\VRED"
+        filename = "\objectNotesOn.png"
+        icon = QtGui.QIcon()
+        icon.addFile(filepath+filename,QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.On)
+        myDocuments_second = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
+        filepath_second =  myDocuments_second +"\Autodesk\Automotive\VRED"
+        filename_second = "\objectNotesOff.png"
+        icon.addFile(filepath_second+filename_second,QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.Off)
         self.tool = vrImmersiveUiService.createTool("Tool_Notes")
         self.tool.setText("Notes")
         self.tool.setCheckable(True)
-        #self.tool.setIcon(icon)
+        self.tool.setIcon(icon)
         self.tool.signal().checked.connect(self.notesEnable)
         self.tool.signal().unchecked.connect(self.notesDisable)
     
@@ -203,12 +248,23 @@ class Notes():
         print("Notes Enabled")
         self.isEnabled = True
                 
-        vrDeviceService.setActiveInteractionGroup("NotesGroup")                        
+        vrDeviceService.setActiveInteractionGroup("NotesGroup")   
+        
+        self.leftUpperActionNotes.signal().triggered.connect(self.sizeDown)
+        #self.leftDownActionNotes.signal().triggered.connect()
+        self.upActionNotes.signal().triggered.connect(self.ChangeNote)
+        self.downActionNotes.signal().triggered.connect(self.deleteNote)
+        self.rightUpperActionNotes.signal().triggered.connect(self.sizeUp)
+        #self.rightDownActionNotes.signal().triggered.connect()
+        self.centerActionNotes.signal().triggered.connect(self.changeNoteView)
+        
+        '''                                                                              
         self.leftAction.signal().triggered.connect(self.sizeDown)
         self.upAction.signal().triggered.connect(self.ChangeNote)
         self.downAction.signal().triggered.connect(self.deleteNote)
         self.rightAction.signal().triggered.connect(self.sizeUp)
         self.centerAction.signal().triggered.connect(self.changeNoteView)
+        '''
         #all_Icons_nodes.setVisibilityFlag(True)
         
         refObject_node = vrNodeService.getNodeFromId(refObject.getID())
@@ -259,12 +315,23 @@ class Notes():
         self.isEnabled = False
         
         self.deleteNoteIsActive = False
+        
+        self.leftUpperActionNotes.signal().triggered.disconnect(self.sizeDown)
+        #self.leftDownActionNotes.signal().triggered.disconnect()
+        self.upActionNotes.signal().triggered.disconnect(self.ChangeNote)
+        self.downActionNotes.signal().triggered.disconnect(self.deleteNote)
+        self.rightUpperActionNotes.signal().triggered.disconnect(self.sizeUp)
+        #self.rightDownActionNotes.signal().triggered.disconnect()
+        self.centerActionNotes.signal().triggered.disconnect(self.changeNoteView)
+        
+        '''
         self.leftAction.signal().triggered.disconnect(self.sizeDown)
         self.upAction.signal().triggered.disconnect(self.ChangeNote)
         self.downAction.signal().triggered.disconnect(self.deleteNote)
         self.rightAction.signal().triggered.disconnect(self.sizeUp)
         self.centerAction.signal().triggered.disconnect(self.changeNoteView)
         self.triggerRightPressed.signal().triggered.disconnect(self.trigger_right_pressed)
+        '''
         vrDeviceService.setActiveInteractionGroup("Locomotion")
                 
         global refObject

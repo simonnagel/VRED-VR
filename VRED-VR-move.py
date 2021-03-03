@@ -6,7 +6,7 @@ This also applies to GitHub "Release" versions.
 Neither Simon Nagel, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
 Accordingly, those configuration samples are provided ?as is? with no warranty of any kind and you use the applications at your own risk.
 
-Scripted by Rutvik Bhatt and Simon Nagel
+Scripted by Rutvik Bhatt, supported by Simon Nagel
 
 First download and copy the osb file "VRControllerMove" provided in the GitHub repository into "C:\Users\USERNAME\Documents\Autodesk\Automotive\VRED" path in order to use the dedicated Move controller.
 If you do not wish to use the dedicated controller you can skip this part. 
@@ -29,17 +29,21 @@ Please make sure that, the Script is executed on each computer of each participa
 '''
 
 import os
-
+from PySide2 import QtCore, QtGui
 def roundup(x):
     return int(math.ceil(x / 15.0)) * 15
 
 moveController = 0
 moveControllerFound = False
+mainCustomFuncGroup = False
 allMoveNodes = getAllNodes()
 for node in allMoveNodes:
     allMoveNodesName = node.getName()
     if allMoveNodesName == "VRController_Move":
         moveController+=1
+    elif allMoveNodesName == 'VRED-VR-Custom-Fucntion':
+        mainCustomFuncGroup = True
+        customFunctionsGroup = node
         
 if moveController == 0:
     myDocuments = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
@@ -55,7 +59,20 @@ if moveController == 0:
 else:
     moveControllerFound = True
 
-class RenderAction(vrInteraction):
+if not mainCustomFuncGroup:
+    customFunctionsGroup = createNode('Group', 'VRED-VR-Custom-Fucntion')
+    
+allFucnNames = ["VRControllerMove", "VRControllerSelect", "VRControllerNotes", 
+                "VRControllerDraw", "VRControllerNotes_Notes", "Cloned_ref_obj",
+                "D_Tool", "D_Lines", "D_tempLine", "Group_html"]
+
+allNodeFuncname = getAllNodes()
+for node in allNodeFuncname:
+    nodeName = node.getName()
+    if nodeName in allFucnNames:
+        addChilds(customFunctionsGroup, [node])
+
+class RenderActionMove(vrInteraction):
     
     def __init__(self):
         vrInteraction.__init__(self)
@@ -117,20 +134,20 @@ class ObjectMover():
         self.rightController.addVirtualButton(padLowerRight, 'touchpad')
         self.rightController.addVirtualButton(padDown, 'touchpad')
         
-        multiButtonPad = vrDeviceService.createInteraction("MultiButtonPad")
-        multiButtonPad.setSupportedInteractionGroups(["MoveGroup"])
+        multiButtonPadMove = vrDeviceService.createInteraction("MultiButtonPadMove")
+        multiButtonPadMove.setSupportedInteractionGroups(["MoveGroup"])
         toolsMenuNotes = vrDeviceService.getInteraction("Tools Menu")
         toolsMenuNotes.addSupportedInteractionGroup("MoveGroup")
         
         #setting control action for right controller Pad
         
-        self.leftUpperAction = multiButtonPad.createControllerAction("right-padupleft-pressed")
-        self.leftDownAction = multiButtonPad.createControllerAction("right-paddownleft-pressed")
-        self.upAction = multiButtonPad.createControllerAction("right-padup-pressed")
-        self.downAction = multiButtonPad.createControllerAction("right-paddown-pressed")
-        self.rightUpperAction = multiButtonPad.createControllerAction("right-padupright-pressed")
-        self.rightDownAction = multiButtonPad.createControllerAction("right-paddownright-pressed")
-        self.centerAction = multiButtonPad.createControllerAction("right-padcenter-pressed")
+        self.leftUpperActionMove = multiButtonPadMove.createControllerAction("right-padupleft-pressed")
+        self.leftDownActionMove = multiButtonPadMove.createControllerAction("right-paddownleft-pressed")
+        self.upActionMove = multiButtonPadMove.createControllerAction("right-padup-pressed")
+        self.downActionMove = multiButtonPadMove.createControllerAction("right-paddown-pressed")
+        self.rightUpperActionMove = multiButtonPadMove.createControllerAction("right-padupright-pressed")
+        self.rightDownActionMove = multiButtonPadMove.createControllerAction("right-paddownright-pressed")
+        self.centerActionMove = multiButtonPadMove.createControllerAction("right-padcenter-pressed")
          
         teleport = vrDeviceService.getInteraction("Teleport")
         teleport.addSupportedInteractionGroup("MoveGroup")
@@ -229,12 +246,14 @@ class ObjectMover():
                 snap_rotation = "%f,%f,%f" %(self.x,self.y,self.z)
                 vrSessionService.sendPython('setTransformNodeRotation(nodeRef, '+snap_rotation+')')
                 self.newRot = setTransformNodeRotation(self.node,self.x,self.y,self.z)  
+                translation = "%f,%f,%f" %(self.currentNodePos.x(), self.currentNodePos.y(),self.currentNodePos.z())
+                vrSessionService.sendPython('setTransformNodeTranslation(nodeRef, '+translation+', True)')
                 
             else:
                 translation = "%f,%f,%f" %(self.currentNodePos.x(), self.currentNodePos.y(),self.currentNodePos.z())
                 vrSessionService.sendPython('setTransformNodeTranslation(nodeRef, '+translation+', True)')
                 
-                rotation = "%f,%f,%f" %(self.currentNodeRot.x(),self.currentNodeRot.y(),self.originalNodeRot.z())
+                rotation = "%f,%f,%f" %(self.currentNodeRot.x(),self.currentNodeRot.y(),self.currentNodeRot.z())
                 vrSessionService.sendPython('setTransformNodeRotation(nodeRef, '+rotation+')')
                                 
         
@@ -248,10 +267,16 @@ class ObjectMover():
         if not self.node.isNull():
             self.originalNodeRot = getTransformNodeRotation(self.node)
             if constXPressed == True or constYPressed == True or constZPressed == True:
-                self.snapping = True
+                #self.snapping = True
                 self.constraint = vrConstraintService.createParentConstraint([device.getNode()],self.node,True)
-                nameString = "%s" % self.node.getName()
-                vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+                
+                mypath = getUniquePath(self.node)
+                nameString = "%s" %mypath
+                vrSessionService.sendPython('"'+nameString+'"')
+                vrSessionService.sendPython('nodeRef = findUniquePath("'+nameString+'")')
+                
+                #nameString = "%s" % self.node.getName()
+                #vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
                 
                 
             else:  
@@ -262,8 +287,14 @@ class ObjectMover():
                 
             self.originalNodePos = getTransformNodeTranslation(self.node,1)
             self.startMoveFlag = True
-            nameString = "%s" % self.node.getName()
-            vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+            
+            mypath = getUniquePath(self.node)
+            nameString = "%s" %mypath
+            vrSessionService.sendPython('"'+nameString+'"')
+            vrSessionService.sendPython('nodeRef = findUniquePath("'+nameString+'")')
+            
+            #nameString = "%s" % self.node.getName()
+            #vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
                     
     def stopMove(self,action,device):
         #global startMoveFlag
@@ -275,23 +306,11 @@ class ObjectMover():
             self.finalNodePos = getTransformNodeTranslation(self.node,1)
             self.finalNodeRot = getTransformNodeRotation(self.node)
             
-            vrConstraintService.deleteConstraint(self.constraint)
-            finalTranslation = "%f,%f,%f" %(self.finalNodePos.x(), self.finalNodePos.y(),self.finalNodePos.z())
-            vrSessionService.sendPython('setTransformNodeTranslation(nodeRef, '+finalTranslation+', True)')
-                
-            finalRotation = "%f,%f,%f" %(self.finalNodeRot.x(),self.finalNodeRot.y(),self.finalNodeRot.z())
-            vrSessionService.sendPython('setTransformNodeRotation(nodeRef, '+finalRotation+')')
-            if self.snapping == True:
-                self.currentNodeRot = getTransformNodeRotation(self.node) 
-                self.x = roundup(self.currentNodeRot.x()) 
-                self.y = roundup(self.currentNodeRot.y()) 
-                self.z = roundup(self.currentNodeRot.z()) 
-                snap_rotation = "%f,%f,%f" %(self.x,self.y,self.z)
-                vrSessionService.sendPython('setTransformNodeRotation(nodeRef, '+snap_rotation+')')
-                self.newRot = setTransformNodeRotation(self.node,self.x,self.y,self.z)  
-                
-            self.startMoveFlag = False
-            '''
+
+            print("outsside")
+
+            
+            
             if constXPressed == True and constYPressed == True:
                 self.afterconstraintPos = setTransformNodeTranslation(self.node,self.currentNodePos.x(), self.currentNodePos.y(),self.originalNodePos.z(),1)
                 self.afterconstraintRot = setTransformNodeRotation(self.node,self.originalNodeRot.x(),self.originalNodeRot.y(),self.originalNodeRot.z()) 
@@ -315,12 +334,33 @@ class ObjectMover():
             elif constZPressed == True:
                 self.afterconstraintPos = setTransformNodeTranslation(self.node,self.originalNodePos.x(), self.originalNodePos.y(),self.currentNodePos.z(),1)
                 self.afterconstraintRot = setTransformNodeRotation(self.node,self.originalNodeRot.x(),self.originalNodeRot.y(),self.originalNodeRot.z()) 
-              
+                print("insidie z ")
+                
+            elif self.snapping == True:
+                self.currentNodeRot = getTransformNodeRotation(self.node) 
+                self.x = roundup(self.currentNodeRot.x()) 
+                self.y = roundup(self.currentNodeRot.y()) 
+                self.z = roundup(self.currentNodeRot.z()) 
+                snap_rotation = "%f,%f,%f" %(self.x,self.y,self.z)
+                vrSessionService.sendPython('setTransformNodeRotation(nodeRef, '+snap_rotation+')')
+                self.newRot = setTransformNodeRotation(self.node,self.x,self.y,self.z)  
+                print("insside snapping true")
+                
+            else:
+                finalTranslation = "%f,%f,%f" %(self.finalNodePos.x(), self.finalNodePos.y(),self.finalNodePos.z())
+                vrSessionService.sendPython('setTransformNodeTranslation(nodeRef, '+finalTranslation+', True)')
+                finalRotation = "%f,%f,%f" %(self.finalNodeRot.x(),self.finalNodeRot.y(),self.finalNodeRot.z())
+                vrSessionService.sendPython('setTransformNodeRotation(nodeRef, '+finalRotation+')')
+                
+            vrConstraintService.deleteConstraint(self.constraint)
+            self.startMoveFlag = False
+            '''
             elif self.snapping == True:
                 self.newRot = setTransformNodeRotation(self.node,self.x,self.y,self.z)  
+            
             #vrSessionService.removeNodeSync(self.node)
-            '''
-            '''
+            
+            
             else:
                 translation = "%f,%f,%f" %(self.originalNodePos.x(), self.originalNodePos.y(),self.currentNodePos.z())
                 vrSessionService.sendPython('setTransformNodeTranslation(nodeRef, '+translation+', True)')
@@ -332,13 +372,19 @@ class ObjectMover():
             
             
     def createMenu(self):
-        #icon = QtGui.QIcon()
-        #icon.addFile("objectMoveOn.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.On)
-        #con.addFile("objectMoveOff.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.Off)
+        myDocuments = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
+        filepath =  myDocuments +"\Autodesk\Automotive\VRED"
+        filename = "\objectMoveOn.png"
+        icon = QtGui.QIcon()
+        icon.addFile(filepath+filename,QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.On)
+        myDocuments_second = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
+        filepath_second =  myDocuments_second +"\Autodesk\Automotive\VRED"
+        filename_second = "\objectMoveOff.png"
+        icon.addFile(filepath_second+filename_second,QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.Off)
         self.tool = vrImmersiveUiService.createTool("Tool_move")
         self.tool.setText("Move")
         self.tool.setCheckable(True)
-        #self.tool.setIcon(icon)
+        self.tool.setIcon(icon)
         self.tool.signal().checked.connect(self.moveEnable)
         self.tool.signal().unchecked.connect(self.moveDisable)
         
@@ -365,13 +411,13 @@ class ObjectMover():
         
         
         vrDeviceService.setActiveInteractionGroup("MoveGroup")
-        self.leftUpperAction.signal().triggered.connect(self.undo)
-        self.leftDownAction.signal().triggered.connect(self.constX)
-        self.upAction.signal().triggered.connect(self.reset)
-        self.downAction.signal().triggered.connect(self.constY)
-        self.rightUpperAction.signal().triggered.connect(self.redo)
-        self.rightDownAction.signal().triggered.connect(self.constZ)
-        self.centerAction.signal().triggered.connect(self.constDeactive)
+        self.leftUpperActionMove.signal().triggered.connect(self.undo)
+        self.leftDownActionMove.signal().triggered.connect(self.constX)
+        self.upActionMove.signal().triggered.connect(self.reset)
+        self.downActionMove.signal().triggered.connect(self.constY)
+        self.rightUpperActionMove.signal().triggered.connect(self.redo)
+        self.rightDownActionMove.signal().triggered.connect(self.constZ)
+        self.centerActionMove.signal().triggered.connect(self.constDeactive)
         
 
         nodes = getAllNodes()
@@ -421,13 +467,13 @@ class ObjectMover():
         print("Move Disabled")
         self.isEnabled = False
         vrDeviceService.setActiveInteractionGroup("Locomotion")
-        self.leftUpperAction.signal().triggered.disconnect(self.undo)
-        self.leftDownAction.signal().triggered.disconnect(self.constX)
-        self.upAction.signal().triggered.disconnect(self.reset)
-        self.downAction.signal().triggered.disconnect(self.constY)
-        self.rightUpperAction.signal().triggered.disconnect(self.redo)
-        self.rightDownAction.signal().triggered.disconnect(self.constZ)
-        self.centerAction.signal().triggered.disconnect(self.constDeactive)
+        self.leftUpperActionMove.signal().triggered.disconnect(self.undo)
+        self.leftDownActionMove.signal().triggered.disconnect(self.constX)
+        self.upActionMove.signal().triggered.disconnect(self.reset)
+        self.downActionMove.signal().triggered.disconnect(self.constY)
+        self.rightUpperActionMove.signal().triggered.disconnect(self.redo)
+        self.rightDownActionMove.signal().triggered.disconnect(self.constZ)
+        self.centerActionMove.signal().triggered.disconnect(self.constDeactive)
         
         if self.moverEnabled:
             start = self.pointer.getControllerAction("start")
@@ -483,8 +529,15 @@ class ObjectMover():
     
         if self.resetflag is True:
             for i in self.last_pos_node:
-                nameString = "%s" % i[0].getName()
-                vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+                
+                mypath = getUniquePath(i[0])
+                nameString = "%s" %mypath
+                vrSessionService.sendPython('"'+nameString+'"')
+                vrSessionService.sendPython('nodeRef = findUniquePath("'+nameString+'")')
+                
+                #nameString = "%s" % i[0].getName()
+                #vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+                
                 i_translation = "%f,%f,%f" %(i[1].x(), i[1].y(), i[1].z())
                 i_rotation = "%f,%f,%f" %(i[2].x(), i[2].y(), i[2].z())
                 vrSessionService.sendPython('setTransformNodeTranslation(nodeRef, '+i_translation+', True)')
@@ -495,8 +548,15 @@ class ObjectMover():
                 
         if not len(self.undo_list) == 0:
             x = self.undo_list[-1]
-            nameString = "%s" % x[0].getName()
-            vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+            
+            mypath = getUniquePath(x[0])
+            nameString = "%s" %mypath
+            vrSessionService.sendPython('"'+nameString+'"')
+            vrSessionService.sendPython('nodeRef = findUniquePath("'+nameString+'")')
+            
+            #nameString = "%s" % x[0].getName()
+            #vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+            
             x_translation = "%f,%f,%f" %(x[1].x(), x[1].y(), x[1].z())
             x_rotation = "%f,%f,%f" %(x[2].x(), x[2].y(), x[2].z())
             current_position = getTransformNodeTranslation(x[0], True)
@@ -517,8 +577,14 @@ class ObjectMover():
             x = self.redo_list[-1]
             #print(x)
             
-            nameString = "%s" % x[0].getName()
-            vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+            mypath = getUniquePath(x[0])
+            nameString = "%s" %mypath
+            vrSessionService.sendPython('"'+nameString+'"')
+            vrSessionService.sendPython('nodeRef = findUniquePath("'+nameString+'")')
+            
+            #nameString = "%s" % x[0].getName()
+            #vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+            
             x_translation = "%f,%f,%f" %(x[1].x(), x[1].y(), x[1].z())
             x_rotation = "%f,%f,%f" %(x[2].x(), x[2].y(), x[2].z())
             
@@ -540,8 +606,14 @@ class ObjectMover():
                 self.last_pos_node.append([node, node_last_pos, node_last_rot])
                 print('recording the last pos of ', node.getName())
         for i in self.all_nodes:
-            nameString = "%s" % i[0].getName()
-            vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+            mypath = getUniquePath(i[0])
+            nameString = "%s" %mypath
+            vrSessionService.sendPython('"'+nameString+'"')
+            vrSessionService.sendPython('nodeRef = findUniquePath("'+nameString+'")')
+            
+            #nameString = "%s" % i[0].getName()
+            #vrSessionService.sendPython('nodeRef = findNode("'+nameString+'")')
+            
             i_translation = "%f,%f,%f" %(i[1].x(), i[1].y(), i[1].z())
             i_rotation = "%f,%f,%f" %(i[2].x(), i[2].y(), i[2].z())
             vrSessionService.sendPython('setTransformNodeTranslation(nodeRef, '+i_translation+', True)')
@@ -638,378 +710,4 @@ class ObjectMover():
                          
         
 move = ObjectMover()
-render = RenderAction()
-
-#-------------------------------------------------Select Object Class---------------------------------------------
-import math
-import PySide2.QtGui
-QColor = PySide2.QtGui.QColor
-QVector3D = PySide2.QtGui.QVector3D
-
-selectController = 0
-selectControllerFound = False
-allselectNodes = getAllNodes()
-for node in allselectNodes:
-    allselectNodesName = node.getName()
-    if allselectNodesName == "VRController_Select":
-        selectController+=1
-        
-if selectController == 0:
-    myDocuments = os.path.join(os.path.join(os.environ['USERPROFILE']),'Documents')
-    filepath =  myDocuments +"\Autodesk\Automotive\VRED"
-    filename = "\VRControllerSelect"
-    if os.path.exists(filepath+str(filename)+".osb"):
-        node = loadGeometry(filepath +str(filename)+".osb")
-        node.setName("VRControllerSelect")
-        selectControllerFound = True
-    else:
-        print("file doesnt exist")
-        selectControllerFound = False
-else:
-    selectControllerFound = True
-
-
-
-class SelectObject():
-    
-    def __init__(self):
-        inpectText = ""
-        self.isEnabled =False
-        self.createMenu()
-        self.timer = vrTimer()
-        self.parentList = []
-        self.multipleSelected = False
-        self.tag = None
-        self.hitNode = None
-        annos = vrAnnotationService.getAnnotations()
-        if len(annos) == 0:  
-            self.anno = createAnnotation("MY New Annotation")
-            self.anno.setText("nodename")
-        
-        else:
-            self.anno = findAnnotation("MY New Annotation")
-            if self.anno == None:
-                self.anno = createAnnotation("MY New Annotation")
-                self.anno.setText("nodename")
-            self.anno.setText("nodename")
-            self.anno.setVisible(0)
-        
-
-        self.leftController = vrDeviceService.getVRDevice("left-controller")
-        self.rightController = vrDeviceService.getVRDevice("right-controller")
-        #tracker = vrDeviceService.getVRDevice("tracker")
-
-        self.leftController.setVisualizationMode(Visualization_ControllerAndHand)
-        self.rightController.setVisualizationMode(Visualization_ControllerAndHand)
-        vrImmersiveInteractionService.setDefaultInteractionsActive(1)
-
-        
-        padCenterSelect = vrdVirtualTouchpadButton('padcenter', 0.0, 0.5, 0.0, 360.0)
-        padLeftSelect = vrdVirtualTouchpadButton('padleft', 0.5, 1.0, 225.0, 315.0)
-        padUpSelect = vrdVirtualTouchpadButton('padup', 0.5, 1.0, 315.0, 45.0)
-        padRightSelect = vrdVirtualTouchpadButton('padright', 0.5, 1.0, 45.0, 135.0)
-        padDownSelect = vrdVirtualTouchpadButton('paddown', 0.5, 1.0, 135.0, 225.0)
-
-        # right controller
-        self.rightController.addVirtualButton(padCenterSelect, 'touchpad')
-        self.rightController.addVirtualButton(padLeftSelect, 'touchpad')
-        self.rightController.addVirtualButton(padUpSelect, 'touchpad')
-        self.rightController.addVirtualButton(padRightSelect, 'touchpad')
-        self.rightController.addVirtualButton(padDownSelect, 'touchpad')
-        
-        multiButtonPadSelect = vrDeviceService.createInteraction("multiButtonPadSelect")
-        multiButtonPadSelect.setSupportedInteractionGroups(["SelectGroup"])
-        toolsMenuSelect = vrDeviceService.getInteraction("Tools Menu")
-        toolsMenuSelect.addSupportedInteractionGroup("SelectGroup")
-        
-        #setting control action for right controller Pad
-        
-        self.leftActionSelect = multiButtonPadSelect.createControllerAction("right-padleft-pressed")
-        self.upActionSelect = multiButtonPadSelect.createControllerAction("right-padup-pressed")
-        self.downActionSelect = multiButtonPadSelect.createControllerAction("right-paddown-pressed")
-        self.rightActionSelect = multiButtonPadSelect.createControllerAction("right-padright-pressed")
-        self.centerActionSelect = multiButtonPadSelect.createControllerAction("right-padcenter-pressed")
-                
-        teleport = vrDeviceService.getInteraction("Teleport")
-        teleport.addSupportedInteractionGroup("SelectGroup")
-        teleport.setControllerActionMapping("prepare" , "left-touchpad-touched")
-        teleport.setControllerActionMapping("abort" , "left-touchpad-untouched")
-        teleport.setControllerActionMapping("execute" , "left-touchpad-pressed")
-        
-        self.pointer = vrDeviceService.getInteraction("Pointer")
-        self.pointer.addSupportedInteractionGroup("SelectGroup")
-        
-        self.triggerRightPressedSelect = multiButtonPadSelect.createControllerAction("right-trigger-pressed")
-        self.triggerRightReleasedSelect = multiButtonPadSelect.createControllerAction("right-trigger-released")
-        
-    def createMenu(self):
-        
-        #icon = QtGui.QIcon()
-        #icon.addFile("objectMoveOn.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.On)
-        #con.addFile("objectMoveOff.png",QtCore.QSize(),QtGui.QIcon.Mode.Normal,QtGui.QIcon.State.Off)
-        self.tool = vrImmersiveUiService.createTool("Tool_select")
-        self.tool.setText("Select Object")
-        self.tool.setCheckable(True)
-        #self.tool.setIcon(icon)
-        self.tool.signal().checked.connect(self.selectEnable)
-        self.tool.signal().unchecked.connect(self.selectDisable)
-    
-    def selectEnable(self):
-        global selectControllerFound
-        
-        allTools = vrImmersiveUiService.getTools()
-        for tool in allTools:
-            if tool.getIsInternal() == False and tool.getName() != self.tool.getName() and tool.getName()[:5] == 'Tool_':
-                tool.setChecked(False)
-                tool.signal().unchecked.emit(None)
-        self.isEnabled = True
-        print("Select Enabled")
-        
-        vrDeviceService.setActiveInteractionGroup("SelectGroup")
-        self.triggerRightPressedSelect.signal().triggered.connect(self.triggerPressedSelect)
-        self.triggerRightReleasedSelect.signal().triggered.connect(self.triggerreleasedSelect) 
-
-        self.leftActionSelect.signal().triggered.connect(self.selectButtonLeft)
-        self.upActionSelect.signal().triggered.connect(self.selectButtonUp)
-        self.downActionSelect.signal().triggered.connect(self.selectButtonDown)
-        self.rightActionSelect.signal().triggered.connect(self.selectButtonRight)
-        self.centerActionSelect.signal().triggered.connect(self.addNodeTag)
-        
-        if selectControllerFound == True:
-            self.newRightCon = findNode("VRController_Select")
-            self.rightController.setVisible(0)
-            self.newRightCon.setActive(1)
-            controllerPos = getTransformNodeTranslation(self.rightController.getNode(),1)
-            setTransformNodeTranslation(self.newRightCon, controllerPos.x(), controllerPos.y(), controllerPos.z(), True)
-            self.SelectControllerConstraint = vrConstraintService.createParentConstraint([self.rightController.getNode()], self.newRightCon, False)
-        else:
-            self.rightController.setVisible(1)
-        
-        self.selectObjectRayMode()    
-        #print(self.hitNode.getName())
-        self.timer.setActive(1)
-        self.timer.connect(self.annotationPrint)
-        self.anno.setVisible(1)
-        
-    def selectDisable(self):
-        global inpectText
-        global selectControllerFound
-        if self.isEnabled == False:
-            print("select was not enabled before " )
-            return
-        
-        allTools = vrImmersiveUiService.getTools()
-        for tool in allTools:
-            if tool.getIsInternal() == False and tool.getName() != self.tool.getName():
-                tool.setCheckable(True)
-        print("Select Disabled")
-        self.isEnabled = False
-        
-        inpectText = ""
-        self.tag = None
-        self.anno.setText(inpectText)
-        self.timer.setActive(0)
-        
-        self.leftActionSelect.signal().triggered.disconnect(self.selectButtonLeft)
-        self.upActionSelect.signal().triggered.disconnect(self.selectButtonUp)
-        self.downActionSelect.signal().triggered.disconnect(self.selectButtonDown)
-        self.rightActionSelect.signal().triggered.disconnect(self.selectButtonRight)
-        self.centerActionSelect.signal().triggered.disconnect(self.addNodeTag)
-        
-        self.triggerRightPressedSelect.signal().triggered.disconnect(self.triggerPressedSelect)
-        self.triggerRightReleasedSelect.signal().triggered.disconnect(self.triggerreleasedSelect)
-        vrDeviceService.setActiveInteractionGroup("Locomotion")
-        self.neutralRayMode()
-
-        self.anno.setVisible(0)
-        deselectAll()
-        setWireframeSelection(0)
-        
-        self.rightController.setVisible(1)
-        if selectControllerFound == True: 
-            self.newRightCon.setActive(0)
-            vrConstraintService.deleteConstraint(self.SelectControllerConstraint)
-            
-
-            
-        #vrSessionService.sendPython('deselectAll()')
-        #vrSessionService.sendPython('setWireframeSelection(0)')
-        
-    def triggerPressedSelect(self):
-        
-        self.intersectionRay = self.rightController.pick()
-        self.hitNode = self.intersectionRay.getNode()
-        if self.hitNode.getName() != "VRMenuPanel":
-            if type(self.hitNode) == 'vrdNode':
-                self.hitNode = toNode(self.hitNode.getObjectId())
-                selectNode(self.hitNode,1)
-                setWireframeSelection(1)
-                
-                nameString = "%s" % self.hitNode.getName()
-                #vrSessionService.sendPython('selectNode("'+nameString+'",1)')
-                #vrSessionService.sendPython('setWireframeSelection(1)')
-                
-            else:
-                selectNode(self.hitNode,1)
-                setWireframeSelection(1)
-                
-                nameString = "%s" % self.hitNode.getName()
-                #vrSessionService.sendPython('selectNode("'+nameString+'",1)')
-                #vrSessionService.sendPython('setWireframeSelection(1)')
-                
- 
-    def triggerreleasedSelect(self):
-        
-        if self.hitNode.getName() != "VRMenuPanel" or self.hitNode != None:
-            print(self.hitNode.getName())
-    
-    def addNodeTag(self):
-        
-        if hasNodeTag(getSelectedNode(), 'Movable'):
-            removeNodeTag(getSelectedNode(), 'Movable')
-            self.tag = "Selected Object is NOT 'Movable':  "+getSelectedNode().getName()
-        else:
-            addNodeTag(getSelectedNode(), 'Movable')
-            self.tag = "Selected Object is 'Movable' :"+getSelectedNode().getName()
-
-    def selectButtonUp(self):
-        print("up pressed")
-        
-        currentNode = getSelectedNode()
-        parentnode = currentNode.getParent()
-        parentnodeName = parentnode.getName()
-        if not parentnodeName == "Root":
-            selectParent()
-            '''
-            selectNode(parentnode,1)
-            #print(getSelectedNode.getName())
-            nameString = "%s" % parentnode.getName()
-            vrSessionService.sendPython('selectNode("'+nameString+'",1)')
-            '''
-            self.multipleSelected = True
-            
-    def selectButtonDown(self):
-        print('Down button pressed')
-        checkChildren = getSelectedNode().getNChildren()
-        if checkChildren >=1:
-            child = getSelectedNode().getChild(0)
-            selectNode(child)
-        else:
-            child = getSelectedNode()
-            selectNode(child)
-        
-    def selectButtonLeft(self):
-        print('Left pressed')
-        currentNode = getSelectedNode()
-        currentNodename = currentNode.getName()
-        parent = currentNode.getParent()
-        
-        
-        for i in range(parent.getNChildren()):
-            newNodeName = parent.getChild(i).getName()
-            if newNodeName == currentNodename:
-                if i == 0:
-                    selectNode(getSelectedNode())
-                else:                
-                    brother = parent.getChild(i-1)
-                    selectNode(brother)
-                break
-    
-    def selectButtonRight(self):
-        print('Right pressed')
-        currentNode = getSelectedNode()
-        currentNodename = currentNode.getName()
-        parent = currentNode.getParent()
-        
-        lst = list(range(parent.getNChildren()))
-        #print(lst)
-        for i in range(parent.getNChildren()):
-            newNodeName = parent.getChild(i).getName()
-            if newNodeName == currentNodename:
-                if i+1 == len(lst):
-                    selectNode(getSelectedNode())
-                else:            
-                    sister = parent.getChild(i+1)
-                    selectNode(sister)
-                break    
-         
-    def toggleVisibility(self):
-   
-        checkVisibility = getSelectedNode().getActive()
-        if checkVisibility == True:
-            getSelectedNode().setActive(0)
-            vrSessionService.sendPython('getSelectedNode().setActive(0)')
-        else:
-            getSelectedNode().setActive(1)
-            vrSessionService.sendPython('getSelectedNode().setActive(1)')
-    
-    def selectObjectRayMode(self):
-        
-        print("selectObjectRayMode")
-        self.pointer.setControllerActionMapping("prepare" , "right-customtrigger-touched")
-        self.pointer.setControllerActionMapping("abort" , "disable") # Hack: Override the input with an unknown input
-        self.pointer.setControllerActionMapping("start" , "right-customtrigger-pressed")
-        self.pointer.setControllerActionMapping("execute" , "right-customtrigger-released")
-        
-    def neutralRayMode(self):
-        
-        self.pointer.setControllerActionMapping("prepare" , "any-customtrigger-touched")
-        self.pointer.setControllerActionMapping("abort" , "any-customtrigger-untouched")
-        self.pointer.setControllerActionMapping("start" , "any-customtrigger-pressed")
-        self.pointer.setControllerActionMapping("execute" , "any-customtrigger-released") 
-    
-    def annotationPrint(self):
-        global inpectText
-        del self.parentList[:]
-        interPos = getTransformNodeTranslation(self.rightController.getNode(),1)
-        if self.multipleSelected == True:
-            interObj = getSelectedNode()
-
-        else:
-            interObj = getSelectedNode()
-            
-        if interObj.isValid(): 
-            nodename = interObj.getName()
-            parentnode = interObj.getParent()
-            parentnodeName = parentnode.getName()
-            inpectText = ""
-            firstParentName = parentnodeName
-            
-            while parentnodeName != "Root":
-                parentnode =  parentnode.getParent()
-                parentnodeName = parentnode.getName()
-                self.parentList.append(parentnodeName)
-            
-            for i in range(len(self.parentList)-1,-1,-1):
-                inpectText = inpectText +str(self.parentList[i])+"\n"
-            inpectText = "Nodename: "+"\n"+nodename+"\n\n"+"Parent Nodes: "+"\n"+inpectText
-            inpectText = inpectText+firstParentName+ "\n\n"
-            if hasNodeTag(getSelectedNode(), 'Movable'):
-                tagStatus = "Selected Object is 'Movable'"
-                inpectText = inpectText+ "\n\n"+"Tag Status: "+"\n"+tagStatus
-            else:
-                tagStatus = "Selected Object is NOT 'Movable'"
-                inpectText = inpectText+ "\n\n"+"Tag Status: "+"\n"+tagStatus
-                    
-            if self.tag != None:
-                inpectText = inpectText+ "\n\n"+"Tag: "+"\n"+self.tag
-       
-            self.anno.setText(inpectText)
-        self.anno.setPosition(QVector3D(interPos.x(),interPos.y(),interPos.z()))
-        
-    def selectMenuNeutralSettings(self):
-        if selectControllerFound == True: 
-            setSwitchMaterialChoice("C_S_Icon_Child", 1)
-            
-            setSwitchMaterialChoice("C_S_Icon_Next_Down", 0)
-            setSwitchMaterialChoice("C_S_Icon_Next_Up", 0)
-            setSwitchMaterialChoice("C_S_Icon_Parent", 0)
-            setSwitchMaterialChoice("C_S_Icon_Select_Menu_Neutral", 0)
-
-    def selectMenuActiveSettings(self):
-        if selectControllerFound == True: 
-            setSwitchMaterialChoice("C_S_Icon_Move", 0)
-            setSwitchMaterialChoice("C_S_Icon_Select_Menu_Active", 0)
-                
-       
-select = SelectObject()         
+render_move = RenderActionMove()
